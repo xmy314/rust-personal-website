@@ -1,2 +1,10 @@
 [workspace]
 members = ["server", "frontend"]
+
+
+[workspace.metadata.bacon.jobs.webserver]
+command = ["cargo", "run", "--bin", "server", "--", "--port", "8081"]
+need_stdout = true
+background = false
+on_change_strategy = "kill_then_restart"
+kill = ["kill", "-s", "INT"]
