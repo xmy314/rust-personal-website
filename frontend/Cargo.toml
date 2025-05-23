@@ -3,6 +3,7 @@ name = "frontend"
 version = "0.1.0"
 edition = "2021"
 
+
 [dependencies]
 console_error_panic_hook = "0.1.7"
 gloo-net = "0.6.0"
@@ -11,3 +12,15 @@ wasm-bindgen-futures = "0.4.50"
 wasm-logger = "0.2.0"
 yew = { version = "0.21.0", features = ["csr"] }
 yew-router = "0.18.0"
+
+web-sys = { version = "0.3", features = [
+    "console",
+    "Document",
+    "HtmlElement",
+    "MouseEvent",
+    "DomRect",
+    "HtmlCanvasElement",
+] }
+
+winit = { version = "0.30.11" }
+wgpu = "25.0"

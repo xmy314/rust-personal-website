@@ -1,3 +1,6 @@
+mod wgpu_canvas;
+mod wgpu_context;
+
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -13,7 +16,12 @@ enum Route {
 
 fn switch(routes: Route) -> Html {
     match routes {
-        Route::Home => html! { <h1>{ "Hello Frontend" }</h1> },
+        Route::Home => html! {
+            <div style = "width: fit-content; margin-left:auto;margin-right:auto;">
+            <h1>{ "Hello Frontend" }</h1>
+            <wgpu_canvas::WgpuCanvas/>
+            </div>
+        },
         Route::HelloServer => html! { <HelloServer/> },
     }
 }
