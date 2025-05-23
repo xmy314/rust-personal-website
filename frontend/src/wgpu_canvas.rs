@@ -1,4 +1,4 @@
-use crate::{wgpu_context::WgpuState, EVENT_LOOP};
+use crate::{wgpu_context::WgpuContext, EVENT_LOOP};
 
 use web_sys;
 use yew::{platform::spawn_local, prelude::*};
@@ -13,13 +13,13 @@ pub struct WgpuCanvasProps {}
 
 pub enum WgpuCanvasMsg<'a> {
     Initializing,
-    Initialized(WgpuState<'a>),
+    Initialized(WgpuContext<'a>),
     Redraw,
 }
 pub struct WgpuCanvas<'a> {
     canvas: NodeRef,
-    context: Option<WgpuState<'a>>,
-    callback: Callback<WgpuState<'a>>,
+    context: Option<WgpuContext<'a>>,
+    callback: Callback<WgpuContext<'a>>,
     initialize_sent: bool,
 }
 
@@ -30,7 +30,7 @@ impl Component for WgpuCanvas<'static> {
 
     fn create(ctx: &Context<Self>) -> Self {
         let canvas = NodeRef::default();
-        let context_cb: Callback<WgpuState> = ctx.link().callback(WgpuCanvasMsg::Initialized);
+        let context_cb: Callback<WgpuContext> = ctx.link().callback(WgpuCanvasMsg::Initialized);
 
         WgpuCanvas {
             canvas: canvas,
@@ -116,7 +116,7 @@ impl WgpuCanvas<'static> {
 
         let cb = ctx.callback.clone();
         spawn_local(async move {
-            let wgpu_state = WgpuState::new(window, height, width).await;
+            let wgpu_state = WgpuContext::new(window, height, width).await;
             cb.emit(wgpu_state);
         });
     }

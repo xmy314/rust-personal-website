@@ -1,9 +1,12 @@
 use std::iter;
 use std::sync::Arc;
+
+use wgpu::util::DeviceExt;
+
 use winit::event::*;
 use winit::window::Window;
 
-pub(crate) struct WgpuState<'a> {
+pub(crate) struct WgpuContext<'a> {
     surface: wgpu::Surface<'a>,
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -11,11 +14,55 @@ pub(crate) struct WgpuState<'a> {
     size: winit::dpi::PhysicalSize<u32>,
     window: Arc<Window>,
     render_pipeline: wgpu::RenderPipeline,
+    vertex_buffer: wgpu::Buffer,
 }
 
-impl<'a> WgpuState<'a> {
+#[repr(C)]
+#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+struct Vertex {
+    position: [f32; 3],
+    color: [f32; 3],
+}
+
+impl Vertex {
+    fn desc() -> wgpu::VertexBufferLayout<'static> {
+        wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    offset: 0,
+                    shader_location: 0,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                    shader_location: 1,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+            ],
+        }
+    }
+}
+
+const VERTICES: &[Vertex] = &[
+    Vertex {
+        position: [0.0, 0.5, 0.0],
+        color: [1.0, 0.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, 0.0],
+        color: [0.0, 1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, 0.0],
+        color: [0.0, 0.0, 1.0],
+    },
+];
+
+impl<'a> WgpuContext<'a> {
     // Creating some of the wgpu types requires async code
-    pub async fn new(window: Window, height: u32, width: u32) -> WgpuState<'a> {
+    pub async fn new(window: Window, height: u32, width: u32) -> WgpuContext<'a> {
         let size = window.inner_size();
 
         // The instance is a handle to our GPU
@@ -97,7 +144,7 @@ impl<'a> WgpuState<'a> {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"), // 1.
-                buffers: &[],                 // 2.
+                buffers: &[Vertex::desc()],   // 2.
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -134,6 +181,12 @@ impl<'a> WgpuState<'a> {
             cache: None,     // 6.
         });
 
+        let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+
         Self {
             surface,
             device,
@@ -142,6 +195,7 @@ impl<'a> WgpuState<'a> {
             size,
             window: window_arc,
             render_pipeline,
+            vertex_buffer,
         }
     }
 
@@ -206,7 +260,9 @@ impl<'a> WgpuState<'a> {
             });
 
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw(0..3, 0..1);
+            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+
+            render_pass.draw(0..VERTICES.len() as u32, 0..1);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
