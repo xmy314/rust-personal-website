@@ -1,4 +1,4 @@
-use crate::wgpu_context::WgpuState;
+use crate::{wgpu_context::WgpuState, EVENT_LOOP};
 
 use web_sys;
 use yew::{platform::spawn_local, prelude::*};
@@ -6,7 +6,7 @@ use yew::{platform::spawn_local, prelude::*};
 #[cfg(target_family = "wasm")] // cfg here to trick rust analyzer
 use winit::platform::web::WindowAttributesExtWebSys;
 
-use winit::{event_loop, window::WindowAttributes};
+use winit::window::WindowAttributes;
 
 #[derive(PartialEq, Properties)]
 pub struct WgpuCanvasProps {}
@@ -107,13 +107,12 @@ impl WgpuCanvas<'static> {
         log::info!("context creation started");
         let height = canvas.height();
         let width = canvas.width();
-        let event_loop = event_loop::EventLoop::new().unwrap();
         let window_attr = WindowAttributes::default()
             .with_inner_size(winit::dpi::LogicalSize::new(width, height));
         #[cfg(target_family = "wasm")]
         let window_attr = WindowAttributes::default().with_canvas(Some(canvas));
         #[allow(deprecated)]
-        let window = event_loop.create_window(window_attr).unwrap();
+        let window = EVENT_LOOP.with(|event_loop| event_loop.create_window(window_attr).unwrap());
 
         let cb = ctx.callback.clone();
         spawn_local(async move {

@@ -20,6 +20,7 @@ fn switch(routes: Route) -> Html {
             <div style = "width: fit-content; margin-left:auto;margin-right:auto;">
             <h1>{ "Hello Frontend" }</h1>
             <wgpu_canvas::WgpuCanvas/>
+            <wgpu_canvas::WgpuCanvas/>
             </div>
         },
         Route::HelloServer => html! { <HelloServer/> },
@@ -83,6 +84,9 @@ fn app() -> Html {
         </BrowserRouter>
     }
 }
+
+thread_local! {static EVENT_LOOP:winit::event_loop::EventLoop<()>=winit::event_loop::EventLoop::new().unwrap()}
+
 fn main() {
     wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
     console_error_panic_hook::set_once();
