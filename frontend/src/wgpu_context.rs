@@ -342,6 +342,15 @@ impl<'a> WgpuContext<'a> {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
+
+            self.camera.aspect = new_size.width as f32 / new_size.height as f32;
+
+            self.camera_uniform.update_view_proj(&self.camera);
+            self.queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[self.camera_uniform]),
+            );
         }
     }
 

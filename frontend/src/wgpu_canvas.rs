@@ -1,12 +1,13 @@
 use crate::{wgpu_context::WgpuContext, EVENT_LOOP};
 
 use gloo::timers::callback::Interval;
+use web_sys::HtmlCanvasElement;
 use yew::{platform::spawn_local, prelude::*};
 
 #[cfg(target_family = "wasm")] // cfg here to trick rust analyzer
 use winit::platform::web::WindowAttributesExtWebSys;
 
-use winit::window::WindowAttributes;
+use winit::{dpi::PhysicalSize, window::WindowAttributes};
 
 #[derive(Debug, Default)]
 pub struct ControlState {
@@ -114,6 +115,12 @@ impl Component for WgpuCanvas<'static> {
             }
             WgpuCanvasMsg::Update => {
                 if let Some(context) = &mut self.context {
+                    let canvas = self.canvas.cast::<HtmlCanvasElement>().unwrap();
+                    let width = canvas.client_width() as u32;
+                    let height = canvas.client_height() as u32;
+                    log::info!("w: {width}, h: {height}");
+                    context.resize(PhysicalSize::new(width, height));
+
                     context.update(self.control_state.get_2d_vec());
                     context.window().request_redraw();
                     match context.render() {
@@ -179,9 +186,8 @@ impl Component for WgpuCanvas<'static> {
             });
 
         html! (
-            <div>
-              <canvas onkeydown={on_key_down} onkeyup={on_key_up} ref = {self.canvas.clone()}/>
-            </div>
+              <canvas style="position:fixed;width: calc(100vw - min(2vw,2vh));height: calc(100vh - min(2vw,2vh));left:min(1vw,1vh);top:min(1vw,1vh);z-index:-1;border-radius:24px;"
+              onkeydown={on_key_down} onkeyup={on_key_up} ref = {self.canvas.clone()}/>
         )
     }
 
