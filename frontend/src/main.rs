@@ -18,8 +18,7 @@ fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! {
             <div style = "width: fit-content; margin-left:auto;margin-right:auto;">
-            <h1>{ "Hello Frontend" }</h1>
-            <wgpu_canvas::WgpuCanvas/>
+            <h1>{ "Hello Wgpu and 3D" }</h1>
             <wgpu_canvas::WgpuCanvas/>
             </div>
         },
