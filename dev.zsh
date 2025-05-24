@@ -1,8 +1,13 @@
 #!/bin/zsh
-set -euo pipefail
-IFS=$'\n\t'
+SESH="w_dev"
 
-# hot reloading version.
-(trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT; \
- zsh -c 'cd frontend; trunk serve --proxy-backend=http://localhost:8081/api/' & \
- zsh -c 'bacon webserver')
+tmux has-session -t $SESH 2>/dev/null
+
+if [ $? != 0 ]; then
+    tmux new-session -d -s $SESH -n "all" -d "cd frontend; trunk serve --proxy-backend=http://localhost:8081/api/"
+    tmux split-window -h -t $SESH:0  "bacon webserver"
+
+    # tmux select-window -t $SESH:all
+fi
+
+tmux attach-session -t $SESH
