@@ -37,23 +37,23 @@ impl Vertex {
 const VERTICES: &[Vertex] = &[
     Vertex {
         position: [-0.0868241, 0.49240386, 0.0],
-        color: [0.5, 0.0, 0.5],
+        color: [0.9, 0.9, 0.9],
     }, // A
     Vertex {
         position: [-0.49513406, 0.06958647, 0.0],
-        color: [0.5, 0.0, 0.5],
+        color: [0.9, 0.9, 0.9],
     }, // B
     Vertex {
         position: [-0.21918549, -0.44939706, 0.0],
-        color: [0.5, 0.0, 0.5],
+        color: [0.9, 0.9, 0.9],
     }, // C
     Vertex {
         position: [0.35966998, -0.3473291, 0.0],
-        color: [0.5, 0.0, 0.5],
+        color: [0.9, 0.9, 0.9],
     }, // D
     Vertex {
         position: [0.44147372, 0.2347359, 0.0],
-        color: [0.5, 0.0, 0.5],
+        color: [0.9, 0.9, 0.9],
     }, // E
 ];
 
@@ -396,9 +396,9 @@ impl<'a> WgpuContext<'a> {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
+                            r: 0.08,
+                            g: 0.08,
+                            b: 0.08,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,
