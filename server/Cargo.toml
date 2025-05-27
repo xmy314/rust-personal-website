@@ -9,6 +9,14 @@ clap = { version = "4.5.38", features = ["derive"] }
 log = "0.4.27"
 tokio = { version = "1.45.0", features = ["full"] }
 tower = "0.5.2"
+tower-service = "0.3.3"
 tower-http = { version = "0.6.4", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
+vercel_runtime = "1.1.4"
+http-body-util = "0.1"
+
+
+[[bin]]
+name = "vercel"
+path = "api/vercel.rs"

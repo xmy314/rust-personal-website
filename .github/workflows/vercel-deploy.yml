@@ -1,0 +1,81 @@
+name: Vercel Deploy Prebuild Action
+
+# This workflow creates/keeps track of a branch named "vercel-deploy".
+# Whenever a new commit is done to main, this workflow moves the branch to master,
+# compiles the frontend and move the artifacts to where vercel expects it. then,
+# this vercel-deploy makes a new commit and force push it github. With that, vercel
+# gets the file structure that it likes in deployment and I get the file structure 
+# that I like in development. The old commit would stay like all other commits on
+#  github.
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Cargo Build
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Config git
+      run: |
+        git config --global user.name "xmy314"
+        git config --global user.email "xmy314@users.noreply.github.com"
+
+    - name: Create if vercel-deploy not exists
+      run: |
+        head_count=$(git ls-remote --heads origin refs/heads/vercel-deploy | wc -l)
+        if [ "$head_count" -eq 0 ]; then
+          echo "create new branch"
+          git checkout -b vercel-deploy
+          git switch master
+        else
+          echo "pull existing branch"
+          git fetch origin
+        fi
+
+    - name: Move the vercel-deploy to master.
+      run: git branch -f vercel-deploy $(git rev-parse master)
+
+    - name: Switch to vercel-deploy branch.
+      run: git switch vercel-deploy
+
+    # Custom Starts Here
+    - name: install trunk
+      uses: jetli/trunk-action@v0.5.0
+      with:
+        # Optional version of trunk to install(eg. 'v0.19.1', 'latest')
+        version: 'latest'
+    
+    - name: Run the prebuild bash script.
+      run: ./vercel-deploy-prebuild.sh
+    # Custom Ends Here
+
+    - name: Commit and push
+      run: |
+        git add .
+        git commit -m "Generate dist for vercel"
+        head_count=$(git ls-remote --heads origin refs/heads/vercel-deploy | wc -l)
+        if [ "$head_count" -eq 0 ]; then
+          echo "new remote branch"
+          git push --set-upstream origin vercel-deploy
+        else
+          echo "overwrite remote branch"
+          git push -f origin vercel-deploy
+        fi
